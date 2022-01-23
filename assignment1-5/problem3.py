@@ -30,10 +30,11 @@ def cart2hom(points):
     points_hom: a np array of points in homogeneous coordinates
   """
 
-  #
-  # You code here
-  #
+  shape = points.shape
+  points_hom = np.ones((shape[0], shape[1]+1))
+  points_hom[:, :-1] = points
 
+  return points_hom
 
 def hom2cart(points):
   """ Transforms from homogeneous to cartesian coordinates.
@@ -45,10 +46,12 @@ def hom2cart(points):
     points_hom: a np array of points in cartesian coordinates
   """
 
-  points_hom = points[:-1] / points[-1]
-  
-  return points_hom
-   
+  shape = points.shape
+  points_car = np.zeros((shape[0], shape[1]-1))
+  for i in range(shape[0]):
+        points_car[i, :] = points[i, :-1] / points[i, -1]
+
+  return points_car
 
 
 def gettranslation(v):
@@ -60,10 +63,12 @@ def gettranslation(v):
   Returns:
     T: translation matrix in homogeneous coordinates
   """
+  n = len(v)
+  T = np.identity(n+1)
+  for i in range(n):
+      T[i, -1] = v[i]
 
-  #
-  # You code here
-  #
+  return T
 
 
 def getxrotation(d):
@@ -76,9 +81,15 @@ def getxrotation(d):
     Rx: rotation matrix
   """
 
-  #
-  # You code here
-  #
+  d_radian = d * (np.pi/180)
+  Rx = np.identity(4)
+  Rx[1, 1] = np.cos(d_radian)
+  Rx[1, 2] = -np.sin(d_radian)
+  Rx[2, 1] = - Rx[1, 2]
+  Rx[2, 2] = Rx[1, 1]
+
+  return Rx
+
 
 
 def getyrotation(d):
@@ -90,10 +101,15 @@ def getyrotation(d):
   Returns:
     Ry: rotation matrix
   """
+  d_radian = d * (np.pi/180)
+  Ry = np.identity(4)
+  Ry[0, 0] = np.cos(d_radian)
+  Ry[0, 2] = np.sin(d_radian)
+  Ry[2, 0] = - Ry[0, 2]
+  Ry[2, 2] = Ry[0, 0]
 
-  #
-  # You code here
-  #
+  return Ry
+
 
 
 def getzrotation(d):
@@ -105,10 +121,15 @@ def getzrotation(d):
   Returns:
     Rz: rotation matrix
   """
+  d_radian = d * (np.pi/180)
+  Rz = np.identity(4)
+  Rz[0, 0] = np.cos(d_radian)
+  Rz[0, 1] = -np.sin(d_radian)
+  Rz[1, 0] = - Rz[0, 1]
+  Rz[1, 1] = Rz[0, 0]
 
-  #
-  # You code here
-  #
+  return Rz
+
 
 
 
@@ -124,9 +145,14 @@ def getcentralprojection(principal, focal):
     L: central projection matrix
   """
 
-  #
-  # You code here
-  #
+  L = np.zeros((3, 4))
+  L[0, 0] = focal
+  L[1, 1] = focal
+  L[0, 2] = principal[0]
+  L[1, 2] = principal[1]
+  L[2, 2] = 1
+
+  return L
 
 
 def getfullprojection(T, Rx, Ry, Rz, L):
@@ -144,9 +170,10 @@ def getfullprojection(T, Rx, Ry, Rz, L):
     M: matrix that summarizes extrinsic transformations
   """
 
-  #
-  # You code here
-  #
+  M = T.dot(Rx).dot(Ry).dot(Rz)
+  P = L.dot(M)
+
+  return P, M
 
 
 def projectpoints(P, X):
@@ -172,9 +199,7 @@ def loadpoints():
     x: np array of points loaded from obj2d.npy
   """
 
-  #
-  # You code here
-  #
+  return np.load(r'E:\TUDarmstadt\cv1\assignment1-5\data\obj2d.npy')
 
 
 def loadz():
@@ -184,9 +209,7 @@ def loadz():
     z: np array containing the z-coordinates
   """
 
-  #
-  # You code here
-  #
+  return np.load(r'E:\TUDarmstadt\cv1\assignment1-5\data\zs.npy')
 
 
 def invertprojection(L, P2d, z):
@@ -235,3 +258,25 @@ def p3multiplecoice():
   '''
 
   return -1
+
+
+t = np.array([-27.1, -2.9, -3.2])
+principal_point = np.array([8, -10])
+focal_length = 8
+
+# model transformations
+T = gettranslation(t)
+Ry = getyrotation(135)
+Rx = getxrotation(-30)
+Rz = getzrotation(90)
+print(T)
+print(Ry)
+print(Rx)
+print(Rz)
+
+K = getcentralprojection(principal_point, focal_length)
+
+P,M = getfullprojection(T, Rx, Ry, Rz, K)
+print(P)
+print(M)
+print('test')
