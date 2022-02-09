@@ -8,7 +8,7 @@ def displaypoints2d(points):
   plt.plot(points[0,:],points[1,:], '.b')
   plt.xlabel('Screen X')
   plt.ylabel('Screen Y')
-
+  plt.show()
 
 # Plot 3D points
 def displaypoints3d(points):
@@ -18,6 +18,7 @@ def displaypoints3d(points):
   ax.set_xlabel("World X")
   ax.set_ylabel("World Y")
   ax.set_zlabel("World Z")
+  plt.show()
 
 
 def cart2hom(points):
@@ -31,8 +32,9 @@ def cart2hom(points):
   """
 
   shape = points.shape
-  points_hom = np.ones((shape[0], shape[1]+1))
-  points_hom[:, :-1] = points
+  points_hom = np.concatenate((points, np.ones((1, shape[1]))), axis=0)
+  # points_hom = np.ones((shape[0]+1, shape[1]))
+  # points_hom[:-1, :] = points
 
   return points_hom
 
@@ -46,12 +48,12 @@ def hom2cart(points):
     points_hom: a np array of points in cartesian coordinates
   """
 
-  shape = points.shape
-  points_car = np.zeros((shape[0], shape[1]-1))
-  for i in range(shape[0]):
-        points_car[i, :] = points[i, :-1] / points[i, -1]
+  # shape = points.shape
+  # points_car = np.zeros((shape[0], shape[1]-1))
+  # for i in range(shape[0]):
+  #       points_car[i, :] = points[i, :-1] / points[i, -1]
 
-  return points_car
+  return np.delete(points/points[-1], -1, axis=0)
 
 
 def gettranslation(v):
@@ -84,7 +86,7 @@ def getxrotation(d):
   d_radian = d * (np.pi/180)
   Rx = np.identity(4)
   Rx[1, 1] = np.cos(d_radian)
-  Rx[1, 2] = -np.sin(d_radian)
+  Rx[1, 2] = - np.sin(d_radian)
   Rx[2, 1] = - Rx[1, 2]
   Rx[2, 2] = Rx[1, 1]
 
@@ -170,7 +172,7 @@ def getfullprojection(T, Rx, Ry, Rz, L):
     M: matrix that summarizes extrinsic transformations
   """
 
-  M = T.dot(Rx).dot(Ry).dot(Rz)
+  M = Rz.dot(Rx).dot(Ry).dot(T)
   P = L.dot(M)
 
   return P, M
@@ -187,10 +189,11 @@ def projectpoints(P, X):
     x: 2d points in cartesian coordinates
   """
 
-  #
-  # You code here
-  #
+  X_hom = cart2hom(X)
+  X_pro = P.dot(X_hom)
+  x = hom2cart(X_pro)
 
+  return x
 
 def loadpoints():
   """ Load 2D points from obj2d.npy.
@@ -199,7 +202,7 @@ def loadpoints():
     x: np array of points loaded from obj2d.npy
   """
 
-  return np.load(r'E:\TUDarmstadt\cv1\assignment1-5\data\obj2d.npy')
+  return np.load(r'data\obj2d.npy')
 
 
 def loadz():
@@ -209,7 +212,7 @@ def loadz():
     z: np array containing the z-coordinates
   """
 
-  return np.load(r'E:\TUDarmstadt\cv1\assignment1-5\data\zs.npy')
+  return np.load(r'data\zs.npy')
 
 
 def invertprojection(L, P2d, z):
@@ -225,9 +228,11 @@ def invertprojection(L, P2d, z):
     P3d: 3d cartesian camera coordinates of the points
   """
 
-  #
-  # You code here
-  #
+  P2d_hom = P2d * z
+  L = np.delete(L, -1, axis=1)
+  P3d = np.linalg.inv(L).dot(np.concatenate((P2d_hom, z), axis=0))
+
+  return P3d
 
 
 def inverttransformation(M, P3d):
@@ -242,9 +247,10 @@ def inverttransformation(M, P3d):
     X: 3d points after the extrinsic transformations have been reverted
   """
 
-  #
-  # You code here
-  #
+  P3d_hom = cart2hom(P3d)
+  X = np.linalg.inv(M).dot(P3d_hom)
+
+  return X
 
 
 def p3multiplecoice():
@@ -257,26 +263,43 @@ def p3multiplecoice():
   2: All transformations commute.
   '''
 
-  return -1
+  return 0
 
+if __name__ == "__main__":
+    t = np.array([-27.1, -2.9, -3.2])
+    principal_point = np.array([8, -10])
+    focal_length = 8
 
-t = np.array([-27.1, -2.9, -3.2])
-principal_point = np.array([8, -10])
-focal_length = 8
+    # model transformations
+    T = gettranslation(t)
+    Ry = getyrotation(135)
+    Rx = getxrotation(-30)
+    Rz = getzrotation(90)
+    print(T)
+    print(Ry)
+    print(Rx)
+    print(Rz)
 
-# model transformations
-T = gettranslation(t)
-Ry = getyrotation(135)
-Rx = getxrotation(-30)
-Rz = getzrotation(90)
-print(T)
-print(Ry)
-print(Rx)
-print(Rz)
+    K = getcentralprojection(principal_point, focal_length)
 
-K = getcentralprojection(principal_point, focal_length)
+    P,M = getfullprojection(T, Rx, Ry, Rz, K)
+    print(P)
+    print(M)
+    print('test')
 
-P,M = getfullprojection(T, Rx, Ry, Rz, K)
-print(P)
-print(M)
-print('test')
+    points = loadpoints()
+    displaypoints2d(points)
+
+    z = loadz()
+
+    Xt = invertprojection(K, points, z)
+
+    Xh = inverttransformation(M, Xt)
+
+    worldpoints = hom2cart(Xh)
+    displaypoints3d(worldpoints)
+
+    points2 = projectpoints(P, worldpoints)
+    displaypoints2d(points2)
+
+    plt.show()
