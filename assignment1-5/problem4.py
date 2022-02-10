@@ -13,9 +13,14 @@ def gauss2d(sigma, fsize):
     g: *normalized* Gaussian filter
   """
 
-  #
-  # You code here
-  #
+  g = np.zeros((fsize, 1))
+  offset = fsize // 2
+  for i in range(-offset, -offset + fsize):
+     g[i + offset] = 1/(np.sqrt(2*np.pi) * sigma) * np.exp(-(i**2) / 2*sigma**2) \
+  
+  g = g / g.sum()
+
+  return g
 
 
 def createfilters():
@@ -24,9 +29,13 @@ def createfilters():
     fx, fy: filters as described in the problem assignment
   """
 
-  #
-  # You code here
-  #
+  g = gauss2d(0.9, 3)
+  d_x = np.array([-1, 0, 1])
+  d_x = d_x[np.newaxis, :]
+  fx = g.dot(d_x)
+  fy = d_x.T.dot(g.T)
+
+  return fx, fy
 
 
 def filterimage(I, fx, fy):
@@ -41,9 +50,10 @@ def filterimage(I, fx, fy):
     Ix, Iy: images filtered by fx and fy respectively
   """
 
-  #
-  # You code here
-  #
+  Ix = ndimage.convolve(I, fx, mode='constant', cval=0.0)
+  Iy = ndimage.convolve(I, fy, mode='constant', cval=0.0)
+
+  return Ix, Iy
 
 
 def detectedges(Ix, Iy, thr):
@@ -57,9 +67,11 @@ def detectedges(Ix, Iy, thr):
     edges: (H,W) array that contains the magnitude of the image gradient at edges and 0 otherwise
   """
 
-  #
-  # You code here
-  #
+  magitude = np.sqrt(Ix**2 + Iy**2)
+  edges= np.where(magitude >= thr, magitude, 0)
+
+  return edges
+
 
 
 def nonmaxsupp(edges, Ix, Iy):

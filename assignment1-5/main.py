@@ -123,14 +123,16 @@ def problem4():
     plt.imshow(np.sqrt(imgx**2 + imgy**2), "gray", interpolation="none")
     plt.axis("off")
     plt.title("Derivative magnitude")
+    plt.show()
 
     # threshold derivative
-    threshold = 1.0
+    threshold = 0.3
     edges = detectedges(imgx,imgy,threshold)
     plt.figure()
     plt.imshow(edges > 0, "gray", interpolation="none")
     plt.axis("off")
     plt.title("Binary edges")
+    plt.show()
 
     # non maximum suppression
     edges2 = nonmaxsupp(edges,imgx,imgy)
@@ -143,7 +145,7 @@ def problem4():
 
 
 if __name__ == "__main__":
-    problem1()
-    problem2()
-    problem3()
+    # problem1()
+    # problem2()
+    # problem3()
     problem4()

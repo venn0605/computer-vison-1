@@ -5,11 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "cv1_assgiment1",
+            "name": "cv1_assgin1.3",
             "type": "python",
             "request": "launch",
             "program": "U:\\Working\\github\\computer-vison-1\\assignment1-5\\problem3.py",
             "console": "integratedTerminal"
-        }
+        },
+
+        {
+            "name": "cv1_assgin1.4",
+            "type": "python",
+            "request": "launch",
+            "program": "U:\\Working\\github\\computer-vison-1\\assignment1-5\\main.py",
+            "console": "integratedTerminal"
+        },
     ]
 }
