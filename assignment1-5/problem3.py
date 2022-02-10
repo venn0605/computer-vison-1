@@ -52,7 +52,7 @@ def hom2cart(points):
   # points_car = np.zeros((shape[0], shape[1]-1))
   # for i in range(shape[0]):
   #       points_car[i, :] = points[i, :-1] / points[i, -1]
-
+  # devide the last row 4*n
   return np.delete(points/points[-1], -1, axis=0)
 
 
@@ -190,7 +190,7 @@ def projectpoints(P, X):
   """
 
   X_hom = cart2hom(X)
-  X_pro = P.dot(X_hom)
+  X_pro = P.dot(X_hom)    # 像素坐标系 齐次三维坐标
   x = hom2cart(X_pro)
 
   return x
@@ -283,9 +283,9 @@ if __name__ == "__main__":
     K = getcentralprojection(principal_point, focal_length)
 
     P,M = getfullprojection(T, Rx, Ry, Rz, K)
-    print(P)
-    print(M)
-    print('test')
+    # print(P)
+    # print(M)
+    # print('test')
 
     points = loadpoints()
     displaypoints2d(points)
