@@ -142,6 +142,7 @@ def problem4():
     plt.title("Non-maximum suppression")
 
     plt.show()
+    print('end')
 
 
 if __name__ == "__main__":

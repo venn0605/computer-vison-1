@@ -84,19 +84,24 @@ def nonmaxsupp(edges, Ix, Iy):
   Returns:
     edges2: edge map where non-maximum edges are suppressed
   """
-
+  m, n = edges.shape
+  edges2 = np.zeros((m, n))
+  for i in range(1, m-1):
+        for j in range(1, n-1):
+            theta = np.arctan(Iy[i, j] / Ix[i, j]) * 180 / np.pi
   # handle top-to-bottom edges: theta in [-90, -67.5] or (67.5, 90]
-
-  # You code here
-
+            if (-90 <= theta <= -67.5) or (67.5 < theta <= 90):
+                  q, r = edges[i-1, j], edges[i+1, j]
   # handle left-to-right edges: theta in (-22.5, 22.5]
-
-  # You code here
-
+            elif -22.5 < theta <= 22.5:
+                  q, r = edges[i, j-1], edges[i, j+1]
   # handle bottomleft-to-topright edges: theta in (22.5, 67.5]
-
-  # Your code here
-
+            elif 22.5 < theta <= 67.5:
+                  q, r = edges[i+1, j-1], edges[i-1, j+1]
   # handle topleft-to-bottomright edges: theta in [-67.5, -22.5]
+            elif -67.5 <= theta <= -22.5:
+                  q, r = edges[i-1, j-1], edges[i+1, j+1]
 
-  # Your code here
+            if (edges[i, j] >= q) and (edges[i, j] >= r):
+                  edges2[i, j] = edges[i, j]
+  return edges2        
