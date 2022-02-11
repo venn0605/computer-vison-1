@@ -28,7 +28,7 @@ def separatechannels(bayerdata):
 
     m = bayerdata.shape[0]
     n = bayerdata.shape[1]
-    r_channel = np.zeros((m,n))
+    r_channel = np.zeros((m,n))         # np.zeros_like(bayerdata)
     g_channel = np.zeros((m,n))
     b_channel = np.zeros((m,n))
     for i in range(m):
@@ -79,12 +79,13 @@ def interpolate(r, g, b):
     g_inter = convolve(g, K_g, mode='mirror')
     b_inter = convolve(b, K_b, mode='mirror')
 
-    m = r.shape[0]
-    n = r.shape[1]
-    image_inter = np.zeros((m,n,3))
-    image_inter[:, :, 0] = r_inter
-    image_inter[:, :, 1] = g_inter
-    image_inter[:, :, 2] = b_inter
+    # m = r.shape[0]
+    # n = r.shape[1]
+    # image_inter = np.zeros((m,n,3))
+    # image_inter[:, :, 0] = r_inter
+    # image_inter[:, :, 1] = g_inter
+    # image_inter[:, :, 2] = b_inter
+    image_inter = assembleimage(r_inter, g_inter, b_inter)
 
     return image_inter
 
